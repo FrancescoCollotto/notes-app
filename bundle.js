@@ -11,6 +11,16 @@
         loadNotes(callback) {
           fetch("http://localhost:3000/notes").then((response) => response.json()).then((notesData) => callback(notesData));
         }
+        createNote(callback, newNote) {
+          const note = { content: newNote };
+          fetch("http://localhost:3000/notes", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(note)
+          }).then((response) => response.json()).then((data) => callback(data));
+        }
       };
       module.exports = NotesApi2;
     }
@@ -44,13 +54,17 @@
   var require_notesViews = __commonJS({
     "notesViews.js"(exports, module) {
       var NotesViews2 = class {
-        constructor(model2) {
+        constructor(model2, api2) {
           this.model = model2;
+          this.api = api2;
           this.mainContainerEl = document.querySelector("#main-container");
           this.button = document.querySelector("#btn");
           this.button.addEventListener("click", () => {
             const inputValue = document.getElementById("input-note").value;
-            this.addNewNote(inputValue);
+            this.api.createNote(inputValue, (notes) => {
+              this.model.setNotes(notes);
+              this.displayNotes();
+            });
           });
         }
         addNewNote(inputValue) {
